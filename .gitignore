@@ -1,0 +1,3 @@
+# Custom direnv flake
+/.direnv
+/.envrc
