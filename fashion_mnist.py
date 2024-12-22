@@ -56,13 +56,13 @@ class MNISTDataset(Dataset):
 
         Returns
          - image: (1, 28, 28) tensor
-         - label: (10,) one-hot tensor
+         - label: (1,) label index tensor
         """
         sample = self.dataset[index]
         image: PngImageFile = sample["image"]
         label: int = sample["label"]
 
-        return pil_to_tensor(image), to_one_hot(label)
+        return pil_to_tensor(image), torch.tensor([label])
 
 
 def load_fashion_mnist_datasets() -> tuple[MNISTDataset, MNISTDataset]:
