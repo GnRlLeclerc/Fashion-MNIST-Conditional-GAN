@@ -23,7 +23,7 @@ class Parameters:
     batch_size: int = 64  # Batch size
     n_classes: int = 10  # Number of classes in the dataset (for conditional GAN)
     feature_map_size: int = 64  # Size of the feature maps in the generator & discriminator
-    epochs: int = 5  # Amount of training epochs
+    epochs: int = 10  # Amount of training epochs
     lr: float = 0.0002  # Learning rate
     beta1: float = 0.5  # Beta1 for Adam optimizer
 
@@ -34,12 +34,8 @@ class Generator(nn.Module):
         self.params = params
 
         self.main = nn.Sequential(
-            # (batch_size, params.z_size + params.n_channels, 1, 1) -> (batch_size, params.feature_map_size * 4, 7, 7)
-            nn.ConvTranspose2d(params.z_size + params.n_classes, params.feature_map_size * 4, 7, 1, 0, bias=False),
-            nn.BatchNorm2d(params.feature_map_size * 4),
-            nn.ReLU(True),
-            # (batch_size, params.feature_map_size * 4, 7, 7) -> (batch_size, params.feature_map_size * 2, 7, 7)
-            nn.ConvTranspose2d(params.feature_map_size * 4, params.feature_map_size * 2, 3, 1, 1, bias=False),
+            # (batch_size, params.z_size + params.n_channels, 1, 1) -> (batch_size, params.feature_map_size * 2, 7, 7)
+            nn.ConvTranspose2d(params.z_size + params.n_classes, params.feature_map_size * 2, 7, 1, 0, bias=False),
             nn.BatchNorm2d(params.feature_map_size * 2),
             nn.ReLU(True),
             # (batch_size, params.feature_map_size * 2, 7, 7) -> (batch_size, params.feature_map_size, 14, 14)

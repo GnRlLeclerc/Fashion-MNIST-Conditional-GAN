@@ -1,6 +1,5 @@
 """Utility functions."""
 
-import matplotlib.pyplot as plt
 import torch
 from torch import Tensor, nn
 
@@ -25,17 +24,6 @@ def to_one_hot_batched(labels: Tensor) -> Tensor:
     assert len(labels.shape) == 1, f"Expected a 1D tensor, got {labels.shape}"
 
     return torch.stack([to_one_hot(int(label.item())) for label in labels])
-
-
-def plot_tensor(x: Tensor) -> None:
-    """Plot a PyTorch tensor as a grayscale image."""
-
-    assert len(x.shape) == 3, f"Expected a 3D tensor, got {x.shape}"
-
-    np_image = x.squeeze().detach().numpy()
-
-    plt.imshow(np_image, cmap="gray")
-    plt.show()
 
 
 def weights_init(module: nn.Module):
