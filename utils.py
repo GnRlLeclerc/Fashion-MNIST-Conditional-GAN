@@ -18,12 +18,11 @@ def to_one_hot_batched(labels: Tensor) -> Tensor:
     """Convert a batch of labels to one-hot tensors.
 
     Args:
-        labels (batch_size, 1): Labels
+        labels (batch_size): Labels
 
     Returns:
         (batch_size, n_classes): One-hot tensors"""
-    assert len(labels.shape) == 2, f"Expected a 2D tensor, got {labels.shape}"
-    assert labels.shape[1] == 1, f"Expected a tensor with shape (batch_size, 1), got {labels.shape}"
+    assert len(labels.shape) == 1, f"Expected a 1D tensor, got {labels.shape}"
 
     return torch.stack([to_one_hot(int(label.item())) for label in labels])
 

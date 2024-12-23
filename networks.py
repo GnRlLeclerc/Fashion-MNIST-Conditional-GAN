@@ -20,6 +20,7 @@ class Parameters:
     """GAN parameters"""
 
     z_size: int = 100  # Size of the input noise vector
+    batch_size: int = 64  # Batch size
     n_classes: int = 10  # Number of classes in the dataset (for conditional GAN)
     feature_map_size: int = 64  # Size of the feature maps in the generator & discriminator
     epochs: int = 5  # Amount of training epochs
@@ -44,17 +45,21 @@ class Generator(nn.Module):
             # (batch_size, params.feature_map_size, 14, 14) -> (batch_size, channels=1, 28, 28)
             nn.ConvTranspose2d(params.feature_map_size, 1, 4, 2, 1, bias=False),
             nn.Tanh(),
-            # output: (batch_size, params.channels, 28, 28)
+            # output: (batch_size, 1, 28, 28)
         )
 
     def forward(self, noise: Tensor, labels: Tensor) -> Tensor:
         """Generate images from noise vectors
         Args:
             noise (batch_size, params.z_size): Noise vectors
-            labels (batch_size, 1): Labels
+            labels (batch_size): Labels
+
+        Returns:
+            (batch_size, 1, 28, 28): Generated images
         """
         one_hot = to_one_hot_batched(labels)
-        concatenated = torch.cat((noise, one_hot), 1).to(noise.device)  # (batch_size, params.z_size + params.n_classes)
+        # (batch_size, params.z_size + params.n_classes)
+        concatenated = torch.cat((noise.cpu(), one_hot.cpu()), 1).to(noise.device)
         return self.main(concatenated.unsqueeze(-1).unsqueeze(-1))  # Add (1, 1) dimensions to the noise vector
 
 
@@ -80,7 +85,7 @@ class Discriminator(nn.Module):
     def forward(self, images: Tensor, labels: Tensor) -> Tensor:
         """Discriminate real from fake images
         Args:
-            images (batch_size, params.channels, 28, 28): Images
+            images (batch_size, 1, 28, 28): Images
             labels (batch_size, 1): Labels
 
         Returns:

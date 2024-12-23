@@ -4,3 +4,7 @@
 
 # Pycache
 __pycache__/
+
+# Checkpoints & outputs
+*.pth
+*.npy
