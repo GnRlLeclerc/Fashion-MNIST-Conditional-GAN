@@ -29,13 +29,6 @@ index_to_label = {
 }
 
 
-def to_one_hot(label: int) -> Tensor:
-    """Convert a label to a one-hot tensor."""
-    encoded_label = torch.zeros(len(index_to_label))
-    encoded_label[label] = 1
-    return encoded_label
-
-
 ###############################################################################
 #                                DATASET CLASS                                #
 ###############################################################################

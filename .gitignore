@@ -1,3 +1,6 @@
 # Custom direnv flake
 /.direnv
 /.envrc
+
+# Pycache
+__pycache__/
