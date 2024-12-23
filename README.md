@@ -3,6 +3,7 @@
 ![Generator Showcase](./showcase.png)
 
 A toy Conditional GAN trained on the Fashion-MNIST dataset for the [Deep Learning Computer Vision](https://perso.ensta-paris.fr/~franchi/Cours/IA323.html) course at ENSTA.
+Inspiration was taken from the [DCGan PyTorch example](https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html), and adapted for conditional GANs.
 
 The dependencies needed can be found in [`requirements.txt`](./requirements.txt).
 
