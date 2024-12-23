@@ -34,8 +34,12 @@ class Generator(nn.Module):
         self.params = params
 
         self.main = nn.Sequential(
-            # (batch_size, params.z_size + params.n_channels, 1, 1) -> (batch_size, params.feature_map_size * 2, 7, 7)
-            nn.ConvTranspose2d(params.z_size + params.n_classes, params.feature_map_size * 2, 7, 1, 0, bias=False),
+            # (batch_size, params.z_size + params.n_channels, 1, 1) -> (batch_size, params.feature_map_size * 4, 7, 7)
+            nn.ConvTranspose2d(params.z_size + params.n_classes, params.feature_map_size * 4, 7, 1, 0, bias=False),
+            nn.BatchNorm2d(params.feature_map_size * 4),
+            nn.ReLU(True),
+            # (batch_size, params.feature_map_size * 4, 7, 7) -> (batch_size, params.feature_map_size * 2, 7, 7)
+            nn.ConvTranspose2d(params.feature_map_size * 4, params.feature_map_size * 2, 3, 1, 1, bias=False),
             nn.BatchNorm2d(params.feature_map_size * 2),
             nn.ReLU(True),
             # (batch_size, params.feature_map_size * 2, 7, 7) -> (batch_size, params.feature_map_size, 14, 14)

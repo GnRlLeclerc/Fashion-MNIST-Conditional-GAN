@@ -55,7 +55,9 @@ class MNISTDataset(Dataset):
         image: PngImageFile = sample["image"]
         label: int = sample["label"]
 
-        return pil_to_tensor(image), torch.tensor([label])
+        # Convert the image to [-1, 1], float32, like the GAN output
+        processed = pil_to_tensor(image) / 255 - 0.5
+        return processed, torch.tensor([label])
 
 
 def load_fashion_mnist_datasets() -> tuple[MNISTDataset, MNISTDataset]:
