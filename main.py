@@ -4,7 +4,7 @@ Train and showcase the Conditional GAN
 
 import torch
 
-from display import showcase
+from display import showcase, showcase_gradcam
 from networks import Discriminator, Generator, Parameters
 from train_cgan import train_cgan
 from utils import weights_init
@@ -29,3 +29,4 @@ except FileNotFoundError:
 
 # Showcase the generator images
 showcase(generator, device)
+showcase_gradcam(generator, discriminator, device)

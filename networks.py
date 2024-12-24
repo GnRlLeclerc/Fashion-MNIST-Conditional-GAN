@@ -33,20 +33,19 @@ class Generator(nn.Module):
         super().__init__()
         self.params = params
 
-        self.main = nn.Sequential(
-            # (batch_size, params.z_size + params.n_channels, 1, 1) -> (batch_size, params.feature_map_size * 2, 7, 7)
-            nn.ConvTranspose2d(params.z_size + params.n_classes, params.feature_map_size * 2, 7, 1, 0, bias=False),
-            nn.BatchNorm2d(params.feature_map_size * 2),
-            nn.ReLU(True),
-            # (batch_size, params.feature_map_size * 2, 7, 7) -> (batch_size, params.feature_map_size, 14, 14)
-            nn.ConvTranspose2d(params.feature_map_size * 2, params.feature_map_size, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(params.feature_map_size),
-            nn.ReLU(True),
-            # (batch_size, params.feature_map_size, 14, 14) -> (batch_size, channels=1, 28, 28)
-            nn.ConvTranspose2d(params.feature_map_size, 1, 4, 2, 1, bias=False),
-            nn.Tanh(),
-            # output: (batch_size, 1, 28, 28)
+        # (batch_size, params.z_size + params.n_channels, 1, 1) -> (batch_size, params.feature_map_size * 2, 7, 7)
+        self.conv1 = nn.ConvTranspose2d(
+            params.z_size + params.n_classes, params.feature_map_size * 2, 7, 1, 0, bias=False
         )
+        self.norm1 = nn.BatchNorm2d(params.feature_map_size * 2)
+        self.activ = nn.ReLU()
+        # (batch_size, params.feature_map_size * 2, 7, 7) -> (batch_size, params.feature_map_size, 14, 14)
+        self.conv2 = nn.ConvTranspose2d(params.feature_map_size * 2, params.feature_map_size, 4, 2, 1, bias=False)
+        self.norm2 = nn.BatchNorm2d(params.feature_map_size)
+        # (batch_size, params.feature_map_size, 14, 14) -> (batch_size, channels=1, 28, 28)
+        self.conv3 = nn.ConvTranspose2d(params.feature_map_size, 1, 4, 2, 1, bias=False)
+        self.activ_final = nn.Tanh()
+        # output: (batch_size, 1, 28, 28)
 
     def forward(self, noise: Tensor, labels: Tensor) -> Tensor:
         """Generate images from noise vectors
@@ -60,7 +59,12 @@ class Generator(nn.Module):
         one_hot = to_one_hot_batched(labels)
         # (batch_size, params.z_size + params.n_classes)
         concatenated = torch.cat((noise.cpu(), one_hot.cpu()), 1).to(noise.device)
-        return self.main(concatenated.unsqueeze(-1).unsqueeze(-1))  # Add (1, 1) dimensions to the noise vector
+
+        # Add (1, 1) dimensions to the noise vector
+        x = self.activ(self.norm1(self.conv1(concatenated.unsqueeze(-1).unsqueeze(-1))))
+        x = self.activ(self.norm2(self.conv2(x)))
+        x = self.activ_final(self.conv3(x))
+        return x
 
 
 class Discriminator(nn.Module):
@@ -68,19 +72,16 @@ class Discriminator(nn.Module):
         super().__init__()
         self.params = params
 
-        self.main = nn.Sequential(
-            # (batch_size, params.n_classes, 28, 28) -> (batch_size, params.feature_map_size, 14, 14)
-            nn.Conv2d(params.n_classes, params.feature_map_size, 4, 2, 1, bias=False),
-            nn.LeakyReLU(0.2, inplace=True),
-            # (batch_size, params.feature_map_size, 14, 14) -> (batch_size, params.feature_map_size * 2, 7, 7)
-            nn.Conv2d(params.feature_map_size, params.feature_map_size * 2, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(params.feature_map_size * 2),
-            nn.LeakyReLU(0.2, inplace=True),
-            # (batch_size, params.feature_map_size * 2, 7, 7) -> (batch_size, 1, 1, 1)
-            nn.Conv2d(params.feature_map_size * 2, 1, 7, 1, 0, bias=False),
-            nn.Sigmoid(),
-            # output: (batch_size, 1, 1, 1)
-        )
+        # (batch_size, params.n_classes, 28, 28) -> (batch_size, params.feature_map_size, 14, 14)
+        self.conv1 = nn.Conv2d(params.n_classes, params.feature_map_size, 4, 2, 1, bias=False)
+        self.activ = nn.LeakyReLU(0.2)
+        # (batch_size, params.feature_map_size, 14, 14) -> (batch_size, params.feature_map_size * 2, 7, 7)
+        self.conv2 = nn.Conv2d(params.feature_map_size, params.feature_map_size * 2, 4, 2, 1, bias=False)
+        self.norm = nn.BatchNorm2d(params.feature_map_size * 2)
+        # (batch_size, params.feature_map_size * 2, 7, 7) -> (batch_size, 1, 1, 1)
+        self.conv3 = nn.Conv2d(params.feature_map_size * 2, 1, 7, 1, 0, bias=False)
+        self.activ_final = nn.Sigmoid()
+        # output: (batch_size, 1, 1, 1)
 
     def forward(self, images: Tensor, labels: Tensor) -> Tensor:
         """Discriminate real from fake images
@@ -97,4 +98,8 @@ class Discriminator(nn.Module):
         for i, (image, label) in enumerate(zip(images, labels)):
             encoded[i, int(label.item())] = image.squeeze()
 
-        return self.main(encoded).squeeze(-1).squeeze(-1)  # Remove the last 2 dimensions
+        x = self.activ(self.conv1(encoded))
+        x = self.activ(self.norm(self.conv2(x)))
+        x = self.activ_final(self.conv3(x))
+
+        return x.squeeze(-1).squeeze(-1)  # Remove the last 2 dimensions
