@@ -8,7 +8,7 @@ from datasets import DatasetDict, load_dataset
 from PIL.PngImagePlugin import PngImageFile
 from torch import Tensor
 from torch.utils.data import Dataset
-from torchvision.transforms.functional import pil_to_tensor
+from torchvision.transforms.v2.functional import pil_to_tensor
 
 ###############################################################################
 #                             TYPING & CONSTANTS                              #
