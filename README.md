@@ -23,6 +23,7 @@ python main.py
 ```
 ├── display.py        # Display utilities
 ├── fashion_mnist.py  # Dataset
+├── gradcam.py        # GradCAM introspection for discriminator
 ├── main.py           # Entrypoint: train & showcase
 ├── networks.py       # Generator & Discriminator models
 ├── train_cgan.py     # Training function
